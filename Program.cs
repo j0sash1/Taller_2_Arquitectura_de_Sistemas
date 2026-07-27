@@ -4,7 +4,11 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using Serilog;
+using Shortly.Application.Commands.CreateUrl;
+using Shortly.Application.Commands.DeleteUrl;
 using Shortly.Application.Interfaces;
+using Shortly.Application.Queries.GetUrl;
+using Shortly.Application.Queries.ListUrls;
 using Shortly.Application.Services;
 using Shortly.Endpoints;
 using Shortly.Infrastructure;
@@ -74,6 +78,12 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ILinkRepository, LinkRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ILinkService, LinkService>();
+
+// Registers CQRS command and query handlers
+builder.Services.AddScoped<CreateUrlCommandHandler>();
+builder.Services.AddScoped<DeleteUrlCommandHandler>();
+builder.Services.AddScoped<GetUrlQueryHandler>();
+builder.Services.AddScoped<ListUrlsQueryHandler>();
 
 // Builds the application with all registered configurations
 var app = builder.Build();

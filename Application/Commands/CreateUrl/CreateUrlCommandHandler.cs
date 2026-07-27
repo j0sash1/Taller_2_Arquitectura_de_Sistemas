@@ -1,0 +1,41 @@
+using Shortly.Application.DTOs;
+using Shortly.Application.Interfaces;
+using Shortly.Domain.Entities;
+
+namespace Shortly.Application.Commands.CreateUrl;
+
+public sealed class CreateUrlCommandHandler
+{
+    private readonly ILinkRepository _repository;
+    private readonly ILogger<CreateUrlCommandHandler> _logger;
+
+    public CreateUrlCommandHandler(
+        ILinkRepository repository,
+        ILogger<CreateUrlCommandHandler> logger)
+    {
+        _repository = repository;
+        _logger = logger;
+    }
+
+    public async Task<LinkResponse> Handle(CreateUrlCommand command)
+    {
+        var shortUrl = Ulid.NewUlid()
+            .ToString()[..12]
+            .ToLowerInvariant();
+
+        var link = new Link(
+            command.Url,
+            shortUrl,
+            command.UserId);
+
+        await _repository.AddAsync(link);
+
+        await _repository.SaveChangesAsync();
+
+        _logger.LogInformation(
+            "Link created {ShortUrl}",
+            link.ShortUrl);
+
+        return LinkResponse.From(link);
+    }
+}
