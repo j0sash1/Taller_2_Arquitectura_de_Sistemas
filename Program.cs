@@ -51,9 +51,8 @@ builder.Services.AddOpenApi(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("AppDbContext")));
 
-// Registers a separate read-side DbContext (item 4: CQRS read/write split).
-// Points at the same database for now, but as its own DbContext instance
-// so the read and write sides don't share state or a change tracker.
+// Separate read-side DbContext (item 4). Same database for now, but its
+// own instance so read and write don't share state.
 builder.Services.AddDbContext<AppReadDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("AppDbContext")));
 
@@ -86,11 +85,13 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ILinkService, LinkService>();
 
-// CQRS read/write repository split (item 4): command handlers only ever
-// get ILinkWriteRepository injected, query handlers only ever get
-// ILinkReadRepository injected — enforced by the DI registrations below.
+// Read/write repository split (item 4): commands use the write repo,
+// queries use the read repo, never mixed.
 builder.Services.AddScoped<ILinkWriteRepository, LinkWriteRepository>();
 builder.Services.AddScoped<ILinkReadRepository, LinkReadRepository>();
+
+// Keeps the read model in sync after writes (item 5).
+builder.Services.AddScoped<ILinkReadModelSynchronizer, LinkReadModelSynchronizer>();
 
 // Registers CQRS command and query handlers
 builder.Services.AddScoped<CreateUrlCommandHandler>();
@@ -140,19 +141,21 @@ app.MapUrlRedirect();
 // Creates a scope for scoped services (e.g. AppDbContext)
 using (var scope = app.Services.CreateScope())
 {
+    // The read context declares the LinkReadModels table, so it must run
+    // EnsureCreated first (it creates the whole schema on the first run).
+    var readDb = scope.ServiceProvider.GetRequiredService<AppReadDbContext>();
+    readDb.Database.EnsureCreated();
+
     // Gets the database context from the DI container
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     // Creates the database and tables if they do not exist
     db.Database.EnsureCreated();
 
-    // Also ensures the read-side context can see the same schema
-    // (both contexts point at the same database file for now).
-    var readDb = scope.ServiceProvider.GetRequiredService<AppReadDbContext>();
-    readDb.Database.EnsureCreated();
+    var readModelSync = scope.ServiceProvider.GetRequiredService<ILinkReadModelSynchronizer>();
     // Reads the admin password from configuration or uses a default value
     var seedPassword = app.Configuration["Seed:AdminPassword"] ?? "admin123";
     // Seeds initial data (admin user and sample links)
-    await DbInitializer.InitializeAsync(db, seedPassword);
+    await DbInitializer.InitializeAsync(db, readModelSync, seedPassword);
 }
 
 // Starts the application and begins listening for HTTP requests

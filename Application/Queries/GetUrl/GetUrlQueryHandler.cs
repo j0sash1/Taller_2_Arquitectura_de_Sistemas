@@ -15,12 +15,11 @@ public sealed class GetUrlQueryHandler
 
     public async Task<LinkResponse> Handle(GetUrlQuery query)
     {
-        var link = await _repository
-            .GetByShortUrlAsync(query.ShortUrl);
+        var link = await _repository.GetByShortUrlAsync(query.ShortUrl);
 
         if (link is null)
             throw new KeyNotFoundException();
 
-        return LinkResponse.From(link);
+        return link;
     }
 }

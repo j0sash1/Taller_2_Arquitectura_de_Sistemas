@@ -11,6 +11,7 @@ public sealed class LinkService : ILinkService
     private readonly ILogger<LinkService> _logger;
     private readonly ILinkWriteRepository _writeRepository;
     private readonly ILinkReadRepository _readRepository;
+    private readonly ILinkReadModelSynchronizer _readModelSync;
 
     // CQRS handlers
     private readonly CreateUrlCommandHandler _createUrlHandler;
@@ -22,6 +23,7 @@ public sealed class LinkService : ILinkService
     public LinkService(
         ILinkWriteRepository writeRepository,
         ILinkReadRepository readRepository,
+        ILinkReadModelSynchronizer readModelSync,
         ILogger<LinkService> logger,
         CreateUrlCommandHandler createUrlHandler,
         DeleteUrlCommandHandler deleteUrlHandler,
@@ -31,6 +33,7 @@ public sealed class LinkService : ILinkService
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _writeRepository = writeRepository ?? throw new ArgumentNullException(nameof(writeRepository));
         _readRepository = readRepository ?? throw new ArgumentNullException(nameof(readRepository));
+        _readModelSync = readModelSync ?? throw new ArgumentNullException(nameof(readModelSync));
 
         // Initializes CQRS handlers
         _createUrlHandler = createUrlHandler ?? throw new ArgumentNullException(nameof(createUrlHandler));
@@ -70,6 +73,9 @@ public sealed class LinkService : ILinkService
         link.IncrementClicks();
         await _writeRepository.SaveChangesAsync();
 
+        // Keeps the read model (item 5) in sync with the new click count.
+        await _readModelSync.UpsertAsync(link);
+
         _logger.LogInformation("Clicks incremented for linkId: {LinkId}. Total clicks: {Clicks}.", link.Id, link.Clicks);
         return LinkResponse.From(link);
     }
@@ -98,6 +104,6 @@ public sealed class LinkService : ILinkService
         var links = await _readRepository.GetByUserIdAsync(userId);
 
         _logger.LogInformation("Retrieved {Count} links for userId: {UserId}.", links.Count, userId);
-        return links.Select(LinkResponse.From).ToList();
+        return links;
     }
 }

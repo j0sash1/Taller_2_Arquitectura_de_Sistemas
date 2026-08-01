@@ -14,10 +14,6 @@ public sealed class ListUrlsQueryHandler
 
     public async Task<List<LinkResponse>> Handle(ListUrlsQuery query)
     {
-        var links = await _repository.GetAllAsync();
-
-        return links
-            .Select(LinkResponse.From)
-            .ToList();
+        return await _repository.GetAllAsync();
     }
 }

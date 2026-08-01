@@ -9,4 +9,9 @@ namespace Shortly.Infrastructure.Persistence;
 public class AppReadDbContext(DbContextOptions<AppReadDbContext> options) : DbContext(options)
 {
     public DbSet<Link> Links { get; private set; } = null!;
+    public DbSet<User> Users { get; private set; } = null!;
+
+    // Denormalized read-model table (item 5). Kept up to date by
+    // ILinkReadModelSynchronizer whenever a command writes.
+    public DbSet<LinkReadModel> LinkReadModels { get; private set; } = null!;
 }
