@@ -9,6 +9,7 @@ using Shortly.Application.Commands.DeleteUrl;
 using Shortly.Application.Interfaces;
 using Shortly.Application.Queries.GetUrl;
 using Shortly.Application.Queries.ListUrls;
+using Shortly.Application.Queries.GetStats;
 using Shortly.Application.Services;
 using Shortly.Endpoints;
 using Shortly.Infrastructure;
@@ -98,6 +99,7 @@ builder.Services.AddScoped<CreateUrlCommandHandler>();
 builder.Services.AddScoped<DeleteUrlCommandHandler>();
 builder.Services.AddScoped<GetUrlQueryHandler>();
 builder.Services.AddScoped<ListUrlsQueryHandler>();
+builder.Services.AddScoped<GetStatsQueryHandler>();
 
 // Builds the application with all registered configurations
 var app = builder.Build();

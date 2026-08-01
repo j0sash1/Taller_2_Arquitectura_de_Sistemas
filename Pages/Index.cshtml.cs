@@ -23,6 +23,8 @@ public class IndexModel : PageModel
 
     public List<LinkResponse> Links { get; set; } = new();
 
+    public StatsResponse Stats { get; set; } = new();
+
     public async Task OnGetAsync()
     {
         if (User.Identity?.IsAuthenticated == true)
@@ -31,6 +33,7 @@ public class IndexModel : PageModel
             if (userIdClaim is not null && long.TryParse(userIdClaim, out var userId))
             {
                 Links = await _linkService.GetLinksByUserId(userId);
+                Stats = await _linkService.GetStats(userId);
             }
         }
     }

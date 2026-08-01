@@ -4,6 +4,7 @@ using Shortly.Application.Commands.CreateUrl;
 using Shortly.Application.Commands.DeleteUrl;
 using Shortly.Application.Queries.GetUrl;
 using Shortly.Application.Queries.ListUrls;
+using Shortly.Application.Queries.GetStats;
 namespace Shortly.Application.Services;
 
 public sealed class LinkService : ILinkService
@@ -18,6 +19,7 @@ public sealed class LinkService : ILinkService
     private readonly DeleteUrlCommandHandler _deleteUrlHandler;
     private readonly GetUrlQueryHandler _getUrlHandler;
     private readonly ListUrlsQueryHandler _listUrlsHandler;
+    private readonly GetStatsQueryHandler _getStatsHandler;
 
 
     public LinkService(
@@ -28,7 +30,8 @@ public sealed class LinkService : ILinkService
         CreateUrlCommandHandler createUrlHandler,
         DeleteUrlCommandHandler deleteUrlHandler,
         GetUrlQueryHandler getUrlHandler,
-        ListUrlsQueryHandler listUrlsHandler)
+        ListUrlsQueryHandler listUrlsHandler,
+        GetStatsQueryHandler getStatsHandler)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _writeRepository = writeRepository ?? throw new ArgumentNullException(nameof(writeRepository));
@@ -40,6 +43,7 @@ public sealed class LinkService : ILinkService
         _deleteUrlHandler = deleteUrlHandler ?? throw new ArgumentNullException(nameof(deleteUrlHandler));
         _getUrlHandler = getUrlHandler ?? throw new ArgumentNullException(nameof(getUrlHandler));
         _listUrlsHandler = listUrlsHandler ?? throw new ArgumentNullException(nameof(listUrlsHandler));
+        _getStatsHandler = getStatsHandler ?? throw new ArgumentNullException(nameof(getStatsHandler));
     }
 
     public async Task<LinkResponse> CreateLink(string url, long userId)
@@ -105,5 +109,13 @@ public sealed class LinkService : ILinkService
 
         _logger.LogInformation("Retrieved {Count} links for userId: {UserId}.", links.Count, userId);
         return links;
+    }
+
+    public async Task<StatsResponse> GetStats(long userId)
+    {
+        _logger.LogDebug("Dispatching GetStatsQuery.");
+
+        return await _getStatsHandler.Handle(
+            new GetStatsQuery(userId));
     }
 }

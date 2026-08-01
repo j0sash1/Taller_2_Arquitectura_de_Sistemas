@@ -11,15 +11,24 @@
         <div class="level-item has-text-centered">
             <div>
                 <p class="heading">Total Links</p>
-                <p class="title">@Model.Links.Count</p>
+                <p class="title">@Model.Stats.TotalLinks</p>
             </div>
         </div>
         <div class="level-item has-text-centered">
             <div>
                 <p class="heading">Total Clicks</p>
-                <p class="title">@Model.Links.Sum(l => l.Clicks)</p>
+                <p class="title">@Model.Stats.TotalClicks</p>
             </div>
         </div>
+        @if (Model.Stats.MostClickedShortUrl is not null)
+        {
+            <div class="level-item has-text-centered">
+                <div>
+                    <p class="heading">Most Popular</p>
+                    <p class="title is-6">@Model.Stats.MostClickedShortUrl (@Model.Stats.MostClickedClicks clicks)</p>
+                </div>
+            </div>
+        }
     </div>
 
     <div class="columns is-centered">
