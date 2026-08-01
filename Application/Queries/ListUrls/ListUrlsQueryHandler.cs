@@ -5,9 +5,9 @@ namespace Shortly.Application.Queries.ListUrls;
 
 public sealed class ListUrlsQueryHandler
 {
-    private readonly ILinkRepository _repository;
+    private readonly ILinkReadRepository _repository;
 
-    public ListUrlsQueryHandler(ILinkRepository repository)
+    public ListUrlsQueryHandler(ILinkReadRepository repository)
     {
         _repository = repository;
     }

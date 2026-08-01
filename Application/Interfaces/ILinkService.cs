@@ -6,6 +6,8 @@ public interface ILinkService
 {
     Task<LinkResponse> CreateLink(string url, long userId);
 
+    Task DeleteLink(long linkId);
+
     Task<LinkResponse> IncrementClicks(long linkId);
 
     Task<LinkResponse> GetLink(string shortUrl);

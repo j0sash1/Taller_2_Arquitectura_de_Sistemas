@@ -6,11 +6,11 @@ namespace Shortly.Application.Commands.CreateUrl;
 
 public sealed class CreateUrlCommandHandler
 {
-    private readonly ILinkRepository _repository;
+    private readonly ILinkWriteRepository _repository;
     private readonly ILogger<CreateUrlCommandHandler> _logger;
 
     public CreateUrlCommandHandler(
-        ILinkRepository repository,
+        ILinkWriteRepository repository,
         ILogger<CreateUrlCommandHandler> logger)
     {
         _repository = repository;

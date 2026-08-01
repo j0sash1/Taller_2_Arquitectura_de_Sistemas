@@ -13,7 +13,9 @@ using Shortly.Application.Services;
 using Shortly.Endpoints;
 using Shortly.Infrastructure;
 using Shortly.Infrastructure.Persistence;
+using Shortly.Infrastructure.ReadRepositories;
 using Shortly.Infrastructure.Repositories;
+using Shortly.Infrastructure.WriteRepositories;
 
 // Creates the ASP.NET Core application builder with initial configuration
 var builder = WebApplication.CreateBuilder(args);
@@ -49,6 +51,12 @@ builder.Services.AddOpenApi(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("AppDbContext")));
 
+// Registers a separate read-side DbContext (item 4: CQRS read/write split).
+// Points at the same database for now, but as its own DbContext instance
+// so the read and write sides don't share state or a change tracker.
+builder.Services.AddDbContext<AppReadDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("AppDbContext")));
+
 // Configures a volatile server-side ticket store (auth state lost on restart)
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSingleton<MemoryCacheTicketStore>();
@@ -75,9 +83,14 @@ builder.Services.AddAuthorization();
 
 // Registers repositories and services for dependency injection (scoped lifetime)
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<ILinkRepository, LinkRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ILinkService, LinkService>();
+
+// CQRS read/write repository split (item 4): command handlers only ever
+// get ILinkWriteRepository injected, query handlers only ever get
+// ILinkReadRepository injected — enforced by the DI registrations below.
+builder.Services.AddScoped<ILinkWriteRepository, LinkWriteRepository>();
+builder.Services.AddScoped<ILinkReadRepository, LinkReadRepository>();
 
 // Registers CQRS command and query handlers
 builder.Services.AddScoped<CreateUrlCommandHandler>();
@@ -131,6 +144,11 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     // Creates the database and tables if they do not exist
     db.Database.EnsureCreated();
+
+    // Also ensures the read-side context can see the same schema
+    // (both contexts point at the same database file for now).
+    var readDb = scope.ServiceProvider.GetRequiredService<AppReadDbContext>();
+    readDb.Database.EnsureCreated();
     // Reads the admin password from configuration or uses a default value
     var seedPassword = app.Configuration["Seed:AdminPassword"] ?? "admin123";
     // Seeds initial data (admin user and sample links)

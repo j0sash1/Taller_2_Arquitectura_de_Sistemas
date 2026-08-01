@@ -5,10 +5,10 @@ namespace Shortly.Application.Queries.GetUrl;
 
 public sealed class GetUrlQueryHandler
 {
-    private readonly ILinkRepository _repository;
+    private readonly ILinkReadRepository _repository;
 
     public GetUrlQueryHandler(
-        ILinkRepository repository)
+        ILinkReadRepository repository)
     {
         _repository = repository;
     }
