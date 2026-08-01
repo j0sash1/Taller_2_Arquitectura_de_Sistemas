@@ -27,3 +27,43 @@
 * "¿Cómo validar que las operaciones de lectura utilizan exclusivamente los Query Handlers?"
 
 ---
+
+## Prompts de Felipe (ítems 4, 5, 3-GetStatsQuery)
+
+**Herramienta utilizada:** Claude (Anthropic), vía chat web.
+**Alcance:** Implementación de la separación de repositorios read/write (ítem 4), el schema de lectura optimizado con sincronización (ítem 5), y `GetStatsQuery` (parte pendiente del ítem 3).
+
+## 1. Análisis inicial del proyecto
+
+* "Tengo que hacer el taller2, me podrias dar una idea de que es lo que falta" (adjuntando el proyecto)
+
+## 2. Ítem 4 — Repositorios read/write separados
+
+* "Esta bien o falta algo mas?"
+* Troubleshooting de errores de compilación: contenido de `DeleteUrlCommandHandler.cs` mezclado por error dentro de `GetUrlQueryHandler.cs`.
+* "Como puedo probar esta parte"
+* "Creame el commit para subirlo"
+
+## 3. Ítem 5 — Schema de lectura optimizado
+
+* "Como empiezo la siguiente parte"
+* Troubleshooting de compilación: `LinkReadRepository.cs` (implementación) no se había reemplazado, solo la interfaz `ILinkReadRepository.cs`.
+* "como lo pruebo?"
+
+## 4. Ítem 3 — GetStatsQuery (parte pendiente)
+
+* "que sigue"
+* "sisi" (confirmando la propuesta de qué estadísticas incluir: total de links, total de clicks, link más clickeado)
+* "Esta bien esto?"
+* "como lo pruebo?"
+
+---
+
+### Resumen de uso
+
+La IA se utilizó como asistente de pair-programming para:
+
+* **Diseño de arquitectura CQRS:** Definir cómo separar los repositorios de lectura/escritura y diseñar la tabla de lectura desnormalizada (`LinkReadModel`) con su lógica de sincronización.
+* **Troubleshooting de compilación:** Diagnosticar errores por archivos mal reemplazados o con contenido mezclado durante la integración manual del código.
+* **Validación funcional:** Guiar pruebas paso a paso en el navegador para confirmar que cada ítem funcionaba de punta a punta (crear, listar, redirigir, ver estadísticas).
+* **Manejo de Git:** Redactar los mensajes de commit siguiendo el estándar del proyecto.
